@@ -82,6 +82,28 @@
   jdyrlandweaver
   ====================*/
 void first_pass() {
+  int length, i, varies;
+  length = sizeof(op)/sizeof(int);
+  varies = 0;
+  num_frames = 0;
+  for(i=0;i<length;i++){
+    if(op[i].opcode == FRAMES){
+      num_frames = op[i].op.frames.num_frames;
+    }
+    if(op[i].opcode == VARY){
+      varies++;
+    }
+    if(op[i].opcode == BASENAME){
+      name = op[i].op.basename.p;
+    }
+  }
+  if(varies > 0 && num_frames ==0){
+    exit(0);
+  }
+  if(strcmp(name, "") == 0){
+    name = "animation_file";
+    printf("Base name is %s\n", name);
+  }
 }
 
 /*======== struct vary_node ** second_pass()) ==========
@@ -107,6 +129,11 @@ void first_pass() {
   jdyrlandweaver
   ====================*/
 struct vary_node ** second_pass() {
+  struct vary_node ** frames = (struct vary_node **)malloc(sizeof(struct vary_node *)*num_frames);
+  int i=0;
+  while(op[i].opcode != VARY){
+    i++;
+  }
 }
 
 
@@ -194,40 +221,40 @@ void my_main( int polygons ) {
       switch (op[i].opcode) {
 
       case SPHERE:
-	add_sphere( tmp,op[i].op.sphere.d[0], //cx
+	      add_sphere( tmp,op[i].op.sphere.d[0], //cx
 		    op[i].op.sphere.d[1],  //cy
 		    op[i].op.sphere.d[2],  //cz
 		    op[i].op.sphere.r,
 		    step);
-	//apply the current top origin
-	matrix_mult( s->data[ s->top ], tmp );
-	draw_polygons( tmp, t, g );
-	tmp->lastcol = 0;
-	break;
+	      //apply the current top origin
+	      matrix_mult( s->data[ s->top ], tmp );
+	      draw_polygons( tmp, t, g );
+	      tmp->lastcol = 0;
+	      break;
 
       case TORUS:
-	add_torus( tmp, op[i].op.torus.d[0], //cx
+	      add_torus( tmp, op[i].op.torus.d[0], //cx
 		   op[i].op.torus.d[1],     //cy
 		   op[i].op.torus.d[2],    //cz
 		   op[i].op.torus.r0,
 		   op[i].op.torus.r1,
 		   step);
-	matrix_mult( s->data[ s->top ], tmp );
-	draw_polygons( tmp, t, g );
-	tmp->lastcol = 0;
-	break;
+	     matrix_mult( s->data[ s->top ], tmp );
+	     draw_polygons( tmp, t, g );
+	     tmp->lastcol = 0;
+	     break;
 
       case BOX:
-	add_box( tmp, op[i].op.box.d0[0],
-		 op[i].op.box.d0[1],
+	     add_box( tmp, op[i].op.box.d0[0],
+	     op[i].op.box.d0[1],
 		 op[i].op.box.d0[2],
 		 op[i].op.box.d1[0],
 		 op[i].op.box.d1[1],
 		 op[i].op.box.d1[2]);
-	matrix_mult( s->data[ s->top ], tmp );
-	draw_polygons( tmp, t, g );
-	tmp->lastcol = 0;
-	break;
+	   matrix_mult( s->data[ s->top ], tmp );
+	   draw_polygons( tmp, t, g );
+	   tmp->lastcol = 0;
+  	 break;
 
       case LINE:
 	add_edge( tmp, op[i].op.line.p0[0],
