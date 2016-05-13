@@ -104,6 +104,7 @@ void first_pass() {
     strcpy(name, "animation_file");
     printf("Base name is %s\n", name);
   }
+  printf("Number of frames: %d\n", num_frames);
 }
 
 /*======== struct vary_node ** second_pass()) ==========
@@ -129,17 +130,21 @@ appropirate value.
 jdyrlandweaver
 ====================*/
 struct vary_node ** second_pass() {
-  struct vary_node ** frames = (struct vary_node **)calloc(sizeof(struct vary_node *), num_frames);
-  int i,j=0;
-  double incr = 0;
+  struct vary_node ** frames = (struct vary_node **)calloc(num_frames, sizeof(struct vary_node *));
+  int i,j;
+  i = 0;
+  j = 0;
+  double incr;
+  incr = 0;
   while(i<lastop){
     if(op[i].opcode == VARY){
       if(!frames[0]){
         incr = (op[i].op.vary.end_val - op[i].op.vary.start_val)/(op[i].op.vary.end_frame - op[i].op.vary.start_frame);
         char n[128];
         strcpy(n, op[i].op.vary.p->name);
+        printf("Knob %s\n", n);
         for(j=0;j<num_frames;j++){
-          struct vary_node * node = (struct vary_node *)calloc(sizeof(struct vary_node),1);
+          struct vary_node * node = (struct vary_node *)calloc(1, sizeof(struct vary_node));
           strcpy(node->name, n);
           if(j<=(int)op[i].op.vary.start_frame){
             node->value=op[i].op.vary.start_val/op[i].op.vary.end_val;
@@ -154,8 +159,9 @@ struct vary_node ** second_pass() {
         incr = (op[i].op.vary.end_val - op[i].op.vary.start_val)/(op[i].op.vary.end_frame - op[i].op.vary.start_frame);
         char n[128];
         strcpy(n, op[i].op.vary.p->name);
+        printf("knob %s\n", n);
         for(j=0;j<num_frames;j++){
-          struct vary_node * node = (struct vary_node *)calloc(sizeof(struct vary_node),1);
+          struct vary_node * node = (struct vary_node *)calloc(1, sizeof(struct vary_node));
           strcpy(node->name, n);
           if(j<=(int)op[i].op.vary.start_frame){
             node->value=op[i].op.vary.start_val/op[i].op.vary.end_val;
@@ -259,7 +265,6 @@ void my_main( int polygons ) {
 
   first_pass();
   knobs = second_pass();
-
   for(f=0;f<num_frames;f++){
     if(num_frames>1){
       vn = knobs[f];
@@ -270,9 +275,13 @@ void my_main( int polygons ) {
       }
     }
     for (i=0;i<lastop;i++) {
-      SYMTAB *v = (SYMTAB *)calloc(sizeof(SYMTAB), 1);
+      SYMTAB *v = (SYMTAB *)calloc(1, sizeof(SYMTAB));
+      s = new_stack();
+      tmp = new_matrix(4, 4);
+      transform = new_matrix(4, 4);
       switch (op[i].opcode) {
         case SPHERE:
+          printf("Add sphere\n");
           add_sphere( tmp,op[i].op.sphere.d[0], //cx
             op[i].op.sphere.d[1],  //cy
             op[i].op.sphere.d[2],  //cz
@@ -285,6 +294,7 @@ void my_main( int polygons ) {
           break;
 
         case TORUS:
+          printf("Add Torus\n");
           add_torus( tmp, op[i].op.torus.d[0], //cx
             op[i].op.torus.d[1],     //cy
             op[i].op.torus.d[2],    //cz
@@ -297,6 +307,7 @@ void my_main( int polygons ) {
           break;
 
         case BOX:
+          printf("Add box\n");
           add_box( tmp, op[i].op.box.d0[0],
             op[i].op.box.d0[1],
             op[i].op.box.d0[2],
@@ -309,6 +320,7 @@ void my_main( int polygons ) {
           break;
 
         case LINE:
+          printf("Line\n");
           add_edge( tmp, op[i].op.line.p0[0],
             op[i].op.line.p0[1],
             op[i].op.line.p0[1],
@@ -320,6 +332,7 @@ void my_main( int polygons ) {
           break;
 
         case MOVE:
+          printf("Move\n");
           //get the factors
           xval = op[i].op.move.d[0];
           yval =  op[i].op.move.d[1];
@@ -340,6 +353,7 @@ void my_main( int polygons ) {
           break;
 
         case SCALE:
+          printf("Scale\n");
           xval = op[i].op.scale.d[0];
           yval = op[i].op.scale.d[1];
           zval = op[i].op.scale.d[2];
@@ -359,6 +373,7 @@ void my_main( int polygons ) {
           break;
 
         case ROTATE:
+          printf("Rotate\n");
           xval = op[i].op.rotate.degrees * ( M_PI / 180 );
 
           v = op[i].op.rotate.p;
@@ -380,15 +395,20 @@ void my_main( int polygons ) {
           break;
 
         case PUSH:
+          printf("Push\n");
           push( s );
+          printf("I got here\n");
           break;
-          case POP:
+        case POP:
+          printf("Pop\n");
           pop( s );
           break;
         case SAVE:
+          printf("Save\n");
           save_extension( t, op[i].op.save.p->name );
           break;
         case DISPLAY:
+          printf("Display\n");
           display( t );
           break;
       }
