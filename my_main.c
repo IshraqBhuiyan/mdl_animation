@@ -362,7 +362,7 @@ void my_main( int polygons ) {
 
           v = op[i].op.scale.p;
           if(v){
-            printf("I'm not null Scale\n");
+            //printf("I'm not null Scale\n");
             xval *= v->s.value;
             yval *= v->s.value;
             zval *= v->s.value;
