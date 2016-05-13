@@ -274,6 +274,7 @@ void my_main( int polygons ) {
         vn = vn->next;
       }
     }
+    print_knobs();
     for (i=0;i<lastop;i++) {
       SYMTAB *v = (SYMTAB *)calloc(1, sizeof(SYMTAB));
       s = new_stack();
