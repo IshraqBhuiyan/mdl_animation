@@ -339,9 +339,9 @@ void my_main( int polygons ) {
           zval = op[i].op.move.d[2];
           v = op[i].op.move.p;
           if(v){
-            xval *= v->s.value;
-            yval *= v->s.value;
-            zval *= v->s.value;
+            xval = xval * v->s.value;
+            yval = yval * v->s.value;
+            zval = zval * v->s.value;
           }
 
           transform = make_translate( xval, yval, zval );
