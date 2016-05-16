@@ -147,11 +147,12 @@ struct vary_node ** second_pass() {
           struct vary_node * node = (struct vary_node *)calloc(1, sizeof(struct vary_node));
           strcpy(node->name, n);
           if(j<=(int)op[i].op.vary.start_frame){
-            node->value=op[i].op.vary.start_val/op[i].op.vary.end_val;
+            node->value=op[i].op.vary.start_val/fabs(op[i].op.vary.end_val - op[i].op.vary.start_val);
           }else if(j>=(int)op[i].op.vary.end_frame){
-            node->value=op[i].op.vary.end_val/op[i].op.vary.end_val;
+            node->value=op[i].op.vary.end_val/fabs(op[i].op.vary.end_val - op[i].op.vary.start_val);
           }else{
-            node->value=(op[i].op.vary.start_val + incr * (double)(j-(int)op[i].op.vary.start_frame))/op[i].op.vary.end_val;
+            node->value=(op[i].op.vary.start_val + incr * (double)(j-(int)op[i].op.vary.start_frame))
+                        /fabs(op[i].op.vary.end_val - op[i].op.vary.start_val);
           }
           frames[j]=node;
         }
@@ -159,16 +160,17 @@ struct vary_node ** second_pass() {
         incr = (op[i].op.vary.end_val - op[i].op.vary.start_val)/(op[i].op.vary.end_frame - op[i].op.vary.start_frame);
         char n[128];
         strcpy(n, op[i].op.vary.p->name);
-        printf("knob %s\n", n);
+        printf("Knob %s\n", n);
         for(j=0;j<num_frames;j++){
           struct vary_node * node = (struct vary_node *)calloc(1, sizeof(struct vary_node));
           strcpy(node->name, n);
           if(j<=(int)op[i].op.vary.start_frame){
-            node->value=op[i].op.vary.start_val/op[i].op.vary.end_val;
+            node->value=op[i].op.vary.start_val/fabs(op[i].op.vary.end_val - op[i].op.vary.start_val);
           }else if(j>=(int)op[i].op.vary.end_frame){
-            node->value=op[i].op.vary.end_val/op[i].op.vary.end_val;
+            node->value=op[i].op.vary.end_val/fabs(op[i].op.vary.end_val - op[i].op.vary.start_val);
           }else{
-            node->value=(op[i].op.vary.start_val + incr * (double)(j-(int)op[i].op.vary.start_frame))/op[i].op.vary.end_val;
+            node->value=(op[i].op.vary.start_val + incr * (double)(j-(int)op[i].op.vary.start_frame))
+                        /fabs(op[i].op.vary.end_val - op[i].op.vary.start_val);
           }
           struct vary_node *current = frames[j];
           while(current->next){
@@ -265,6 +267,14 @@ void my_main( int polygons ) {
 
   first_pass();
   knobs = second_pass();
+  for(f = 0;f<num_frames; f++){
+    struct vary_node *curr = (struct vary_node *)calloc(1, sizeof(struct vary_node));
+    curr = knobs[f];
+    while(curr){
+      printf("%s : %f\n", curr->name, curr->value);
+      curr = curr->next;
+    }
+  }
   for(f=0;f<num_frames;f++){
     s = new_stack();
     tmp = new_matrix(4, 4);
@@ -277,7 +287,7 @@ void my_main( int polygons ) {
         vn = vn->next;
       }
     }
-    print_knobs();
+    //print_knobs();
     for (i=0;i<lastop;i++) {
       SYMTAB *v;
       switch (op[i].opcode) {
