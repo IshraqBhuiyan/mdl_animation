@@ -138,46 +138,48 @@ struct vary_node ** second_pass() {
   incr = 0;
   while(i<lastop){
     if(op[i].opcode == VARY){
-      if(!frames[0]){
-        incr = (op[i].op.vary.end_val - op[i].op.vary.start_val)/(op[i].op.vary.end_frame - op[i].op.vary.start_frame);
-        char n[128];
-        strcpy(n, op[i].op.vary.p->name);
-        printf("Knob %s\n", n);
-        for(j=0;j<num_frames;j++){
-          struct vary_node * node = (struct vary_node *)calloc(1, sizeof(struct vary_node));
-          strcpy(node->name, n);
-          if(j<=(int)op[i].op.vary.start_frame){
-            node->value=op[i].op.vary.start_val/fabs(op[i].op.vary.end_val - op[i].op.vary.start_val);
-          }else if(j>=(int)op[i].op.vary.end_frame){
-            node->value=op[i].op.vary.end_val/fabs(op[i].op.vary.end_val - op[i].op.vary.start_val);
-          }else{
-            node->value=(op[i].op.vary.start_val + incr * (double)(j-(int)op[i].op.vary.start_frame))
-                        /fabs(op[i].op.vary.end_val - op[i].op.vary.start_val);
-          }
-          frames[j]=node;
-        }
-      }else{
-        incr = (op[i].op.vary.end_val - op[i].op.vary.start_val)/(op[i].op.vary.end_frame - op[i].op.vary.start_frame);
-        char n[128];
-        strcpy(n, op[i].op.vary.p->name);
-        printf("Knob %s\n", n);
-        for(j=0;j<num_frames;j++){
-          struct vary_node * node = (struct vary_node *)calloc(1, sizeof(struct vary_node));
-          strcpy(node->name, n);
-          if(j<=(int)op[i].op.vary.start_frame){
-            node->value=op[i].op.vary.start_val/fabs(op[i].op.vary.end_val - op[i].op.vary.start_val);
-          }else if(j>=(int)op[i].op.vary.end_frame){
-            node->value=op[i].op.vary.end_val/fabs(op[i].op.vary.end_val - op[i].op.vary.start_val);
-          }else{
-            node->value=(op[i].op.vary.start_val + incr * (double)(j-(int)op[i].op.vary.start_frame))
-                        /fabs(op[i].op.vary.end_val - op[i].op.vary.start_val);
-          }
-          struct vary_node *current = frames[j];
-          while(current->next){
-            current = current->next;
-          }
-          current->next = node;
-        }
+      for(j=0;j<num_frames;j++){
+	if(!frames[j]){
+	  incr = (op[i].op.vary.end_val - op[i].op.vary.start_val)/(op[i].op.vary.end_frame - op[i].op.vary.start_frame);
+	  char n[128];
+	  strcpy(n, op[i].op.vary.p->name);
+	  printf("Knob %s\n", n);
+	  struct vary_node * node = (struct vary_node *)calloc(1, sizeof(struct vary_node));
+	  strcpy(node->name, n);
+	  if(j<=(int)op[i].op.vary.start_frame){
+	    node->value=op[i].op.vary.start_val/fabs(op[i].op.vary.end_val - op[i].op.vary.start_val);
+	  }else if(j>=(int)op[i].op.vary.end_frame){
+	    node->value=op[i].op.vary.end_val/fabs(op[i].op.vary.end_val - op[i].op.vary.start_val);
+	  }else{
+	    node->value=(op[i].op.vary.start_val + incr * (double)(j-(int)op[i].op.vary.start_frame))
+	      /fabs(op[i].op.vary.end_val - op[i].op.vary.start_val);
+	  }
+	  if(j>=(int)op[i].op.vary.start_frame && j<=(int)op[i].op.vary.end_frame){
+	    frames[j]=node;
+	  }
+	}else{
+	  incr = (op[i].op.vary.end_val - op[i].op.vary.start_val)/(op[i].op.vary.end_frame - op[i].op.vary.start_frame);
+	  char n[128];
+	  strcpy(n, op[i].op.vary.p->name);
+	  printf("Knob %s\n", n);
+	  struct vary_node * node = (struct vary_node *)calloc(1, sizeof(struct vary_node));
+	  strcpy(node->name, n);
+	  if(j==(int)op[i].op.vary.start_frame){
+	    node->value=op[i].op.vary.start_val/fabs(op[i].op.vary.end_val - op[i].op.vary.start_val);
+	  }else if(j==(int)op[i].op.vary.end_frame){
+	    node->value=op[i].op.vary.end_val/fabs(op[i].op.vary.end_val - op[i].op.vary.start_val);
+	  }else if(j>(int)op[i].op.vary.start_frame && j<(int)op[i].op.vary.end_frame){
+	    node->value=(op[i].op.vary.start_val + incr * (double)(j-(int)op[i].op.vary.start_frame))
+	      /fabs(op[i].op.vary.end_val - op[i].op.vary.start_val);
+	  }
+	  struct vary_node *current = frames[j];
+	  while(current->next){
+	    current = current->next;
+	  }
+	  if(j>=(int)op[i].op.vary.start_frame && j<=(int)op[i].op.vary.end_frame){
+	    current->next = node;
+	  }
+	}
       }
     }
     i++;
